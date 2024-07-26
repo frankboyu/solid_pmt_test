@@ -56,7 +56,7 @@ int pmt_fit_benchtest(int date, int time, int readout, int iteration)
     //SET UP THE CANVAS
     gStyle->SetOptStat(0);
 	gStyle->SetOptFit(1);    
-	TCanvas *canvas = new TCanvas("canvas", "canvas", 1000, 1000);
+	TCanvas *canvas = new TCanvas("canvas", "canvas", 1200, 1000);
 	canvas->SetGrid(); 
 	canvas->SetLogy();
 
