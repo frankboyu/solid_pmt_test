@@ -30,15 +30,15 @@ int    m_max         =    5;
 int    hist_pmt_min  =    0;
 int    hist_pmt_max  =  500;
 int    hist_norm_min = -100;
-int    hist_norm_max =  400;
-int    fit_min       =   20;
-int    fit_max       =  150;
+int    hist_norm_max = 1500;
+int    fit_min       = -100;
+int    fit_max       = 1000;
 int    peak_low      =  200;
 int    peak_high     =  400;
 
-double parlo[10]      = {  -10.0,   10.0,      0.0,   0.0,  0.0,  0.1,  0.1,  0.1,  0.1,    1.0};
-double parhi[10]      = {   10.0,   50.0,     20.0,   5.0,100.0,  0.9,  0.9,  0.9,  0.9,   12.0};
-double p0save[10]     = {    0.0,   30.0,     10.0,   1.0, 15.0,  0.2,  0.2,  0.2,  0.2,    5.0};
+double parlo[10]      = {  -10.0,  200.0,      0.0,   0.0,  5.0,  0.1,  0.1,  0.1,  0.1,    1.0};
+double parhi[10]      = {   10.0,  400.0,    100.0,   5.0,100.0,  0.9,  0.9,  0.9,  0.9,   12.0};
+double p0save[10]     = {    0.0,  300.0,     10.0,   1.0, 15.0,  0.2,  0.2,  0.2,  0.2,    5.0};
 char par_names[10][7] = { "ped0", "scale", "#sigma", "#mu", "v1", "a2", "c1", "c2", "c3", "#xi"};
 
 bool DEBUG = true;
@@ -50,7 +50,7 @@ double fit2(double *, double *);
 double fit3(double *, double *);
 double T(double, double, double, double, double, double, double);
 double G(double, double, double);
-double size;
+double size = 15.0;
 
 int pmt_fit_beamtest(int date, int time, int readout)
 {
@@ -62,12 +62,11 @@ int pmt_fit_beamtest(int date, int time, int readout)
 	canvas->SetLogy();
 
 	// LOAD THE HISTOGRAM: FOR BEAMTEST 2022 BATCH 2
-	// TFile *file = new TFile("beamtest/20220002_1000/run4770-4787_10uA_TSrandom_Cer_nocut.root");
-	// TH1D *hist_norm = (TH1D*)file->Get(Form("hist_Cer_%d", readout-1));
+	TFile *file = new TFile("beamtest/20220002_1000/nobeam_TS253_Trigger_099_ped108.root");
+	TH1D *hist_pmt = (TH1D*)file->Get(Form("hist_Cer_%d", readout-1));
 	// hist_norm->Scale(1.0/hist_norm->Integral());
-	// size = hist_norm->GetBinWidth(1);
+	// size = hist_pmt->GetBinWidth(1);
 	// cout << "size: " << size << endl;
-
 
     // CREATE THE ORIGINAL HISTOGRAM: FOR BEAM TEST 2022 BATCH 1
     // TH1 *hist_pmt = new TH1D("hist_pmt", "hist_pmt", hist_pmt_max-hist_pmt_min, hist_pmt_min, hist_pmt_max);
@@ -82,28 +81,29 @@ int pmt_fit_beamtest(int date, int time, int readout)
     // }
 
 	// CREATE THE ORIGINAL HISTOGRAM: FOR BEAM TEST 2020
-    TH1 *hist_pmt = new TH1D("hist_pmt", "hist_pmt", (hist_pmt_max-hist_pmt_min), hist_pmt_min, hist_pmt_max);
-	float channel;
-    int count;
-    ifstream file(Form("beamtest/%d_%d/Histo_Ch%d.csv",date, time, readout));
-	// file >> channel >> count;  //skip the first row
-    while (file >> channel >> count) 
-    {
-        if (channel >= hist_pmt_max)
-            break;
-        if (channel != 0)
-            hist_pmt->Fill(channel, count);
-    }
+    // TH1 *hist_pmt = new TH1D("hist_pmt", "hist_pmt", (hist_pmt_max-hist_pmt_min), hist_pmt_min, hist_pmt_max);
+	// float channel;
+    // int count;
+    // ifstream file(Form("beamtest/%d_%d/Histo_Ch%d.csv",date, time, readout));
+	// // file >> channel >> count;  //skip the first row
+    // while (file >> channel >> count) 
+    // {
+    //     if (channel >= hist_pmt_max)
+    //         break;
+    //     if (channel != 0)
+    //         hist_pmt->Fill(channel, count);
+    // }
 
     //CREATE THE NORMALIZED AND PEDESTAL SUBTRACTED HISTOGRAM
-	int xpedpk_list[16] = {26, 23, 25, 26, 26, 22, 26, 25, 26, 23, 25, 26, 25, 26, 25, 23};
-	int xpedpk = xpedpk_list[readout-1];
-    TH1D* hist_norm = new TH1D(Form("hist_norm_%d_%d_Ch%d", date, time, readout), Form("hist_norm_%d_%d_Ch%d", date, time, readout), (hist_norm_max-hist_norm_min), hist_norm_min, hist_norm_max);
+	// int xpedpk_list[16] = {26, 23, 25, 26, 26, 22, 26, 25, 26, 23, 25, 26, 25, 26, 25, 23};
+	// int xpedpk = xpedpk_list[readout-1];
+    int xpedpk = hist_pmt->GetMaximumBin();
+    TH1D* hist_norm = new TH1D(Form("hist_norm_%d_%d_Ch%d", date, time, readout), Form("hist_norm_%d_%d_Ch%d", date, time, readout), int((hist_norm_max-hist_norm_min)/size), hist_norm_min, hist_norm_max);
 
     double norm_factor = 1. / ((double)hist_pmt->Integral());
     for(int bin = 1; bin <= hist_norm->GetXaxis()->GetNbins(); bin++)
     {
-        double content      = (double)hist_pmt->GetBinContent(hist_norm_min+bin+xpedpk);
+        double content      = (double)hist_pmt->GetBinContent(int(hist_norm_min/size)+bin+xpedpk);
         double norm_content = norm_factor * content;
         hist_norm->SetBinContent(bin, norm_content);
 
@@ -194,10 +194,10 @@ int pmt_fit_beamtest(int date, int time, int readout)
     fd3->Draw( "same" );
 
     // canvas->SetLogy(true);
-    canvas->Print(Form("beamtest/%d_%d/Fit_Ch%d.png", date, time, readout));
+    canvas->Print(Form("beamtest/%d_%d/Fit_Ch%d_ped108.png", date, time, readout));
 
     //PRINT THE FITTING PARAMETERS
-	ofstream outf(Form("beamtest/%d_%d/Fit_Ch%d.dat", date, time, readout));
+	ofstream outf(Form("beamtest/%d_%d/Fit_Ch%d_ped108.dat", date, time, readout));
 	outf << date << "    " << time << "    " << readout << "    " << result->Chi2() / result->Ndf() << "    ";
 	outf << xpedpk + fit_pmt->GetParameter(0) << "    ";
 	for(int i=1; i<10; i++)    
@@ -273,7 +273,7 @@ double fitf(double *xx, double *par)
 //         result += pt;
 		
 	}
-	return result / scale;
+	return result / scale * size;
 }
 
 double fit0(double *xx, double *par)
@@ -331,7 +331,7 @@ double fit0(double *xx, double *par)
 		result += G(a, n/v, seff) * (TMath::Exp(-1*mu) * q0);
 		
 	}
-	return result / scale;
+	return result / scale * size;
 }
 
 double fit1(double *xx, double *par)
@@ -389,7 +389,7 @@ double fit1(double *xx, double *par)
 		result += G(a, n/v, seff) * (pt);
 		
 	}
-	return result / scale;
+	return result / scale * size;
 }
 
 double fit2(double *xx, double *par)
@@ -447,7 +447,7 @@ double fit2(double *xx, double *par)
 		result += G(a, n/v, seff) * (pt);
 		
 	}
-	return result / scale;
+	return result / scale * size;
 }
 
 double fit3(double *xx, double *par)
@@ -505,7 +505,7 @@ double fit3(double *xx, double *par)
 		result += G(a, n/v, seff) * (pt);
 		
 	}
-	return result / scale;
+	return result / scale * size;
 }
 
 double T(double n, double m, double v1, double a2, double v2, double a3, double v3)
