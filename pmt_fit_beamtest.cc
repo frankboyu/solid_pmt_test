@@ -103,7 +103,7 @@ int pmt_fit_beamtest(int date, int time, int readout)
     double norm_factor = 1. / ((double)hist_pmt->Integral());
     for(int bin = 1; bin <= hist_norm->GetXaxis()->GetNbins(); bin++)
     {
-        double content      = (double)hist_pmt->GetBinContent(int(hist_norm_min/size)+bin+xpedpk);
+        double content      = (double)hist_pmt->GetBinContent(int(hist_norm_min/size)+bin+xpedpk-1);
         double norm_content = norm_factor * content;
         hist_norm->SetBinContent(bin, norm_content);
 
@@ -159,11 +159,25 @@ int pmt_fit_beamtest(int date, int time, int readout)
     if(DEBUG) std::cout << "Fitting results: " << std::endl;
     TFitResultPtr result = hist_norm->Fit( fit_pmt, "SR0" );
     if(DEBUG) std::cout << " chi^2/NDF: " << result->Chi2() / result->Ndf() << std::endl;
+    TF1 *fit_gaus = new TF1("fit_gaus", "gaus", 150, 450);
+    fit_gaus->SetParameter(1, result->Parameter(1));
+    fit_gaus->SetParameter(2, result->Parameter(2));
+    TFitResultPtr result_gaus = hist_norm->Fit( fit_gaus, "SR0" );
 
     //DRAW THE FITTING RESULTS
     hist_norm->Draw();
+    fit_gaus->SetLineColor(kBlack);
+    fit_gaus->Draw("same");
     fit_pmt->SetNpx(1000);
     fit_pmt->Draw("same");
+    TLine * line_gaus = new TLine(result_gaus->Parameter(1), 0, result_gaus->Parameter(1), hist_norm->GetMaximum());
+    line_gaus->SetLineColor(kBlack);
+    line_gaus->SetLineWidth(2);
+    line_gaus->Draw("same");
+    TLine * line_pmt = new TLine(result->Parameter(1), 0, result->Parameter(1), hist_norm->GetMaximum());
+    line_pmt->SetLineColor(kBlue);
+    line_pmt->SetLineWidth(2);
+    line_pmt->Draw("same");
     
     TF1 *fd0 = new TF1( "fd0", fit0, fit_min, fit_max, 10 );
     fd0->SetParameters( fit_pmt->GetParameters() );
