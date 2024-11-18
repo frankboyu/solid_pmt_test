@@ -31,14 +31,14 @@ int    hist_pmt_min  =    0;
 int    hist_pmt_max  =  500;
 int    hist_norm_min = -100;
 int    hist_norm_max = 1500;
-int    fit_min       = -100;
+int    fit_min       =   50;
 int    fit_max       = 1000;
 int    peak_low      =  200;
 int    peak_high     =  400;
 
-double parlo[10]      = {  -10.0,  200.0,      0.0,   0.0,  5.0,  0.1,  0.1,  0.1,  0.1,    1.0};
-double parhi[10]      = {   10.0,  400.0,    100.0,   5.0,100.0,  0.9,  0.9,  0.9,  0.9,   12.0};
-double p0save[10]     = {    0.0,  300.0,     10.0,   1.0, 15.0,  0.2,  0.2,  0.2,  0.2,    5.0};
+double parlo[10]      = { -200.0,  200.0,     50.0,   0.0, 10.0,  0.1,  0.1,  0.1,  0.1,    1.0};
+double parhi[10]      = {  200.0,  400.0,    100.0,   5.0,100.0,  0.9,  0.9,  0.9,  0.9,   12.0};
+double p0save[10]     = {    0.0,  300.0,     60.0,   1.0, 15.0,  0.2,  0.2,  0.2,  0.2,    5.0};
 char par_names[10][7] = { "ped0", "scale", "#sigma", "#mu", "v1", "a2", "c1", "c2", "c3", "#xi"};
 
 bool DEBUG = true;
@@ -50,7 +50,7 @@ double fit2(double *, double *);
 double fit3(double *, double *);
 double T(double, double, double, double, double, double, double);
 double G(double, double, double);
-double size = 15.0;
+double size = 10.0;
 
 int pmt_fit_beamtest(int date, int time, int readout)
 {
@@ -62,8 +62,8 @@ int pmt_fit_beamtest(int date, int time, int readout)
 	canvas->SetLogy();
 
 	// LOAD THE HISTOGRAM: FOR BEAMTEST 2022 BATCH 2
-	TFile *file = new TFile("beamtest/20220002_1000/nobeam_TS253_Trigger_099_ped108.root");
-	TH1D *hist_pmt = (TH1D*)file->Get(Form("hist_Cer_%d", readout-1));
+	TFile *file = new TFile("beamtest/20220002_2000/10uA_highTS4_Cer_spectra_pedestal_1PE.root");
+	TH1D *hist_pmt = (TH1D*)file->Get(Form("Cer_spectrum_ch3_hist_%d", readout-1));
 	// hist_norm->Scale(1.0/hist_norm->Integral());
 	// size = hist_pmt->GetBinWidth(1);
 	// cout << "size: " << size << endl;
@@ -159,25 +159,25 @@ int pmt_fit_beamtest(int date, int time, int readout)
     if(DEBUG) std::cout << "Fitting results: " << std::endl;
     TFitResultPtr result = hist_norm->Fit( fit_pmt, "SR0" );
     if(DEBUG) std::cout << " chi^2/NDF: " << result->Chi2() / result->Ndf() << std::endl;
-    TF1 *fit_gaus = new TF1("fit_gaus", "gaus", 150, 450);
-    fit_gaus->SetParameter(1, result->Parameter(1));
-    fit_gaus->SetParameter(2, result->Parameter(2));
-    TFitResultPtr result_gaus = hist_norm->Fit( fit_gaus, "SR0" );
+    // TF1 *fit_gaus = new TF1("fit_gaus", "gaus", 150, 450);
+    // fit_gaus->SetParameter(1, result->Parameter(1));
+    // fit_gaus->SetParameter(2, result->Parameter(2));
+    // TFitResultPtr result_gaus = hist_norm->Fit( fit_gaus, "SR0" );
 
     //DRAW THE FITTING RESULTS
     hist_norm->Draw();
-    fit_gaus->SetLineColor(kBlack);
-    fit_gaus->Draw("same");
+    // fit_gaus->SetLineColor(kBlack);
+    // fit_gaus->Draw("same");
     fit_pmt->SetNpx(1000);
     fit_pmt->Draw("same");
-    TLine * line_gaus = new TLine(result_gaus->Parameter(1), 0, result_gaus->Parameter(1), hist_norm->GetMaximum());
-    line_gaus->SetLineColor(kBlack);
-    line_gaus->SetLineWidth(2);
-    line_gaus->Draw("same");
-    TLine * line_pmt = new TLine(result->Parameter(1), 0, result->Parameter(1), hist_norm->GetMaximum());
-    line_pmt->SetLineColor(kBlue);
-    line_pmt->SetLineWidth(2);
-    line_pmt->Draw("same");
+    // TLine * line_gaus = new TLine(result_gaus->Parameter(1), 0, result_gaus->Parameter(1), hist_norm->GetMaximum());
+    // line_gaus->SetLineColor(kBlack);
+    // line_gaus->SetLineWidth(2);
+    // line_gaus->Draw("same");
+    // TLine * line_pmt = new TLine(result->Parameter(1), 0, result->Parameter(1), hist_norm->GetMaximum());
+    // line_pmt->SetLineColor(kBlue);
+    // line_pmt->SetLineWidth(2);
+    // line_pmt->Draw("same");
     
     TF1 *fd0 = new TF1( "fd0", fit0, fit_min, fit_max, 10 );
     fd0->SetParameters( fit_pmt->GetParameters() );
