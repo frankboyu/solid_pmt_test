@@ -31,12 +31,12 @@ int    hist_pmt_min  =    0;
 int    hist_pmt_max  = 1000;
 int    hist_norm_min = -100;
 int    hist_norm_max =  500;
-int    fit_min       =   10;
+int    fit_min       =  -50;
 int    fit_max       =  500;
 int    peak_low      =  200;
 int    peak_high     =  400;
 
-double parlo[10]      = {  -10.0,   40.0,      0.0,   0.0,  0.0,  0.1,  0.1,  0.1,  0.1,    1.0};
+double parlo[10]      = {  -10.0,   20.0,      0.0,   0.0,  0.0,  0.1,  0.1,  0.1,  0.1,    1.0};
 double parhi[10]      = {   10.0,  100.0,     20.0,   5.0, 30.0,  0.9,  0.9,  0.9,  0.9,   12.0};
 double p0save[10]     = {    0.0,   70.0,     10.0,   1.0, 15.0,  0.2,  0.2,  0.2,  0.2,    5.0};
 char par_names[10][7] = { "ped0", "scale", "#sigma", "#mu", "v1", "a2", "c1", "c2", "c3", "#xi"};
