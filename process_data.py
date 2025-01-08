@@ -10,7 +10,7 @@ for group in group_list:
 
     if(iteration==0):
         for run in run_list:
-            directory = "link_data/"+run+"/"
+            directory = "benchtest/"+run+"/"
             for filename in os.listdir(directory):
                 if filename.startswith("Fit"):
                     file_path = os.path.join(directory, filename)
@@ -25,27 +25,27 @@ for group in group_list:
 
         for channel in range(1,max_channel+1):
             for run in run_list:
-                this_plot = "link_data/"+run+"/Fit_Ch0"+str(channel)+".png"
+                this_plot = "benchtest/"+run+"/Fit_Ch0"+str(channel)+".png"
                 plots.append(Image.open(this_plot))
-                this_para = np.loadtxt("link_data/"+run+"/Fit_Ch0"+str(channel)+".dat", comments=None, dtype=float)
+                this_para = np.loadtxt("benchtest/"+run+"/Fit_Ch0"+str(channel)+".dat", comments=None, dtype=float)
                 paras = np.vstack((paras, this_para))
         paras = paras[1:]
 
-        plots[0].save("results/"+group+"/plots_iter0"+str(iteration)+".pdf", "PDF" ,resolution=100.0, save_all=True, append_images=plots[1:])
-        np.savetxt("results/"+group+"/paras_iter0"+str(iteration)+".txt", paras, fmt='%i %i %i %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f')
+        plots[0].save("results/"+group+"/plots_iter0"+str(iteration)+"_5para.pdf", "PDF" ,resolution=100.0, save_all=True, append_images=plots[1:])
+        np.savetxt("results/"+group+"/paras_iter0"+str(iteration)+"_5para.txt", paras, fmt='%i %i %i %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f')
 
-        #AVERAGE THE SPE PARAMETERS IF IT'S THE FIRST ITERATION IN THE CYCLE
-        if(iteration%2==1):
-            for channel in range(1,max_channel+1):
-                paras_new = paras[len(run_list)*(channel-1):len(run_list)*channel]
+        # #AVERAGE THE SPE PARAMETERS IF IT'S THE FIRST ITERATION IN THE CYCLE
+        # if(iteration%2==1):
+        #     for channel in range(1,max_channel+1):
+        #         paras_new = paras[len(run_list)*(channel-1):len(run_list)*channel]
 
-                paras_new[:,8]  = np.average(paras_new[:,8])
-                paras_new[:,9]  = np.average(paras_new[:,9])
-                paras_new[:,10] = np.average(paras_new[:,10])
-                paras_new[:,11] = np.average(paras_new[:,11])
-                paras_new[:,12] = np.average(paras_new[:,12])
-                paras_new[:,13] = np.average(paras_new[:,13])
+        #         paras_new[:,8]  = np.average(paras_new[:,8])
+        #         paras_new[:,9]  = np.average(paras_new[:,9])
+        #         paras_new[:,10] = np.average(paras_new[:,10])
+        #         paras_new[:,11] = np.average(paras_new[:,11])
+        #         paras_new[:,12] = np.average(paras_new[:,12])
+        #         paras_new[:,13] = np.average(paras_new[:,13])
 
-                for i, run in enumerate(run_list):
-                    paras_print = paras_new[i,:].reshape(1, paras_new.shape[1])
-                    np.savetxt("link_data/"+run+"/Fit_Ch0"+str(channel)+".dat", paras_print, fmt='%i %i %i %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f')
+        #         for i, run in enumerate(run_list):
+        #             paras_print = paras_new[i,:].reshape(1, paras_new.shape[1])
+        #             np.savetxt("benchtest/"+run+"/Fit_Ch0"+str(channel)+".dat", paras_print, fmt='%i %i %i %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f %12.7f')
