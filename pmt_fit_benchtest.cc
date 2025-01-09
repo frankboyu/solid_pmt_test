@@ -25,7 +25,7 @@ using namespace std;
 #include <TMath.h>
 #include <TFitResult.h>
 
-int    num_paras     =    5;
+int    num_paras     =   10;
 int    m_max         =    5;
 int    hist_pmt_min  =    0;
 int    hist_pmt_max  = 1000;
@@ -36,9 +36,9 @@ int    fit_max       =  500;
 int    peak_low      =  200;
 int    peak_high     =  400;
 
-double parlo[10]      = {  -10.0,   10.0,      0.0,   0.0,  0.0,  0.1,  0.1,  0.1,  0.1,    1.0};
-double parhi[10]      = {   10.0,  150.0,     20.0,   5.0, 30.0,  0.9,  0.9,  0.9,  0.9,   12.0};
-double p0save[10]     = {    0.0,   70.0,     10.0,   1.0, 15.0,  0.2,  0.2,  0.2,  0.2,    5.0};
+double parlo[10]      = {  -10.0,   10.0,      0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,    1.0};
+double parhi[10]      = {   10.0,  150.0,     20.0,   5.0, 30.0,  1.0,  1.0,  1.0,  1.0,   12.0};
+double p0save[10]     = {    0.0,   70.0,     10.0,   0.1, 10.0,  0.2,  0.2,  0.2,  0.2,    5.0};
 char par_names[10][7] = { "ped0", "scale", "#sigma", "#mu", "v1", "a2", "c1", "c2", "c3", "#xi"};
 
 bool DEBUG = true;
@@ -58,7 +58,7 @@ int pmt_fit_benchtest(int date, int time, int readout, int iteration)
 	gStyle->SetOptFit(1);    
 	TCanvas *canvas = new TCanvas("canvas", "canvas", 1200, 1000);
 	canvas->SetGrid(); 
-	canvas->SetLogy();
+	// canvas->SetLogy();
 
     //CREATE THE ORIGINAL HISTOGRAM
     TH1 *hist_pmt = new TH1D("hist_pmt", "hist_pmt", hist_pmt_max-hist_pmt_min, hist_pmt_min, hist_pmt_max);
@@ -116,46 +116,46 @@ int pmt_fit_benchtest(int date, int time, int readout, int iteration)
     hist_norm->GetYaxis()->SetTitle( "dN/ds p.d.f. [a.u.]" );
 
 	//GET THE INITIAL PARAMETERS
-    if(iteration == 1)
-	{
-		TF1 *ped_fit = new TF1("ped_fit", "gaus", -3.0, 3.0);
-		ped_fit->SetParameters(hist_norm->GetMaximum(), 0.0, 10.0);
-		ped_fit->SetParLimits(2, 0.0, 20.0);
+    // if(iteration == 1)
+	// {
+	// 	TF1 *ped_fit = new TF1("ped_fit", "gaus", -3.0, 3.0);
+	// 	ped_fit->SetParameters(hist_norm->GetMaximum(), 0.0, 10.0);
+	// 	ped_fit->SetParLimits(2, 0.0, 20.0);
 		
-		hist_norm->Fit("ped_fit", "R0L");
+	// 	hist_norm->Fit("ped_fit", "R0L");
 		
-		double ped0   = ped_fit->GetParameter(1);
-		double sigma0 = ped_fit->GetParameter(2);
-		double ypcal  = ped_fit->Integral(hist_norm_min, hist_norm_max);	
-		double mu0    = -1. * TMath::Log(ypcal / hist_norm->Integral());
-		double xave   = hist_norm->GetMean();
-		double scale0 = xave/mu0;
+	// 	double ped0   = ped_fit->GetParameter(1);
+	// 	double sigma0 = ped_fit->GetParameter(2);
+	// 	double ypcal  = ped_fit->Integral(hist_norm_min, hist_norm_max);	
+	// 	double mu0    = -1. * TMath::Log(ypcal / hist_norm->Integral());
+	// 	double xave   = hist_norm->GetMean();
+	// 	double scale0 = xave/mu0;
 
-		p0save[1] = scale0;
-		p0save[2] = sigma0;
-		p0save[3] = mu0;
-	}
-	else
-	{
-		ifstream file_paras(Form("/group/solid/www/solid/html/files/temp/%d_%d/Fit_Ch0%d.dat",date, time, readout));
-		string line;
-		while(getline(file_paras, line))
-		{
-			istringstream iss(line);
-			double number, numbers[24];
-			int index = 0;
-			while (iss >> number) 
-			{
-				numbers[index] = number;
-				index++;
-			}
-			for(int i = 0; i < 10; i++) 
-			{
-				p0save[i] = numbers[i+4];
-			}
-			file_paras.close();
-		}
-	}
+	// 	p0save[1] = scale0;
+	// 	p0save[2] = sigma0;
+	// 	p0save[3] = mu0;
+	// }
+	// else
+	// {
+	// 	ifstream file_paras(Form("/group/solid/www/solid/html/files/temp/%d_%d/Fit_Ch0%d.dat",date, time, readout));
+	// 	string line;
+	// 	while(getline(file_paras, line))
+	// 	{
+	// 		istringstream iss(line);
+	// 		double number, numbers[24];
+	// 		int index = 0;
+	// 		while (iss >> number) 
+	// 		{
+	// 			numbers[index] = number;
+	// 			index++;
+	// 		}
+	// 		for(int i = 0; i < 10; i++) 
+	// 		{
+	// 			p0save[i] = numbers[i+4];
+	// 		}
+	// 		file_paras.close();
+	// 	}
+	// }
 	
 	//INITIALZE THE FITTING FUNCTION
     TF1 *fit_pmt = new TF1("fit_pmt", fitf, fit_min, fit_max, 10);
@@ -193,7 +193,7 @@ int pmt_fit_benchtest(int date, int time, int readout, int iteration)
 	{
 		for(int i = 0; i < 10; i++) 
 		{
-			cout << "\t" << par_names[i] << ": " << p0save[i] << endl;
+			cout << "\t" << par_names[i] << ": " << fit_pmt->GetParameter(i) << endl;
 		}
 	}
     
