@@ -1,4 +1,2 @@
-a_gain_4%
-a_gain_8%
 a_light_940V_off
 a_light_940V_on
